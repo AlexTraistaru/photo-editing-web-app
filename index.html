@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplicatie web de editare foto</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+    }
+
+    button,
+    select,
+    input[type="range"],
+    input[type="file"] {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover:not(:disabled) {
+      background: #f0f0f0;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .preview-area {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      justify-items: center;
+    }
+
+    canvas,
+    video {
+      max-width: 100%;
+      border: 2px solid #d9d9d9;
+      border-radius: 12px;
+      background: #fafafa;
+    }
+
+    .hint {
+      font-size: 14px;
+      color: #555;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .status.info {
+      background: #eef5ff;
+      color: #1f4d8f;
+      border: 1px solid #c9dcff;
+    }
+
+    .status.error {
+      background: #fff1f1;
+      color: #8a1f1f;
+      border: 1px solid #f2c2c2;
+    }
+
+    .status.success {
+      background: #eefbf1;
+      color: #1f6b34;
+      border: 1px solid #bfe6c8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .buttons-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .test-list {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Aplicatie web de editare foto</h1>
+
+    <div class="panel">
+      <div class="row">
+        <div class="control-group">
+          <label for="imageInput">Incarca o imagine</label>
+          <input type="file" id="imageInput" accept="image/*" />
+        </div>
+
+        <div class="buttons-wrap">
+          <button id="startCameraBtn">Porneste camera</button>
+          <button id="captureBtn">Captureaza poza</button>
+          <button id="stopCameraBtn">Opreste camera</button>
+        </div>
+      </div>
+
+      <div class="hint">
+        Aplicatia merge direct in browser pentru editare si upload. Pentru acces la webcam, este recomandat sa rulezi proiectul pe <b>localhost</b>.
+      </div>
+
+      <div id="cameraStatus" class="status info">
+        Camera nu este pornita.
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div class="control-group">
+          <label for="filterSelect">Filtru</label>
+          <select id="filterSelect">
+            <option value="none">Fara filtru</option>
+            <option value="grayscale">Grayscale</option>
+            <option value="sepia">Sepia</option>
+            <option value="negative">Negative</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="brightnessRange">Luminozitate</label>
+          <input type="range" id="brightnessRange" min="0" max="200" value="100" />
+        </div>
+
+        <div class="control-group">
+          <label for="contrastRange">Contrast</label>
+          <input type="range" id="contrastRange" min="0" max="200" value="100" />
+        </div>
+      </div>
+
+      <div class="row buttons-wrap">
+        <button id="rotateLeftBtn">Rotire stanga</button>
+        <button id="rotateRightBtn">Rotire dreapta</button>
+        <button id="flipBtn">Flip orizontal</button>
+        <button id="resetBtn">Reset</button>
+        <button id="downloadBtn">Descarca imaginea</button>
+      </div>
+    </div>
+
+    <div class="panel preview-area">
+      <video id="video" width="480" height="360" autoplay playsinline muted class="hidden"></video>
+      <canvas id="canvas" width="800" height="500"></canvas>
+      <div class="hint">Imaginea editata va fi afisata pe canvas.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Verificari rapide</h2>
+      <ul class="test-list">
+        <li>Upload imagine din calculator</li>
+        <li>Aplicare filtru Negative, unde fiecare canal devine 255 minus valoarea curenta</li>
+        <li>Modificare luminozitate si contrast</li>
+        <li>Rotire si flip orizontal</li>
+        <li>Descarcare imagine editata</li>
+        <li>Captura din camera, doar daca browserul permite accesul</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const startCameraBtn = document.getElementById('startCameraBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    const filterSelect = document.getElementById('filterSelect');
+    const brightnessRange = document.getElementById('brightnessRange');
+    const contrastRange = document.getElementById('contrastRange');
+    const rotateLeftBtn = document.getElementById('rotateLeftBtn');
+    const rotateRightBtn = document.getElementById('rotateRightBtn');
+    const flipBtn = document.getElementById('flipBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const cameraStatus = document.getElementById('cameraStatus');
+    const ctx = canvas.getContext('2d');
+
+    let currentStream = null;
+    let sourceImage = null;
+
+    const state = {
+      filter: 'none',
+      brightness: 100,
+      contrast: 100,
+      rotation: 0,
+      flipX: 1
+    };
+
+    function setStatus(message, type = 'info') {
+      cameraStatus.className = 'status ' + type;
+      cameraStatus.textContent = message;
+    }
+
+    function drawPlaceholder() {
+      canvas.width = 800;
+      canvas.height = 500;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#666';
+      ctx.font = '24px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Nu exista inca o imagine incarcata.', canvas.width / 2, canvas.height / 2);
+    }
+
+    function resetState() {
+      state.filter = 'none';
+      state.brightness = 100;
+      state.contrast = 100;
+      state.rotation = 0;
+      state.flipX = 1;
+
+      filterSelect.value = 'none';
+      brightnessRange.value = 100;
+      contrastRange.value = 100;
+    }
+
+    function createProcessedCanvas() {
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+
+      tempCanvas.width = sourceImage.naturalWidth || sourceImage.width;
+      tempCanvas.height = sourceImage.naturalHeight || sourceImage.height;
+
+      let cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%)`;
+
+      if (state.filter === 'grayscale') {
+        cssFilter += ' grayscale(100%)';
+      } else if (state.filter === 'sepia') {
+        cssFilter += ' sepia(100%)';
+      }
+
+      tempCtx.filter = cssFilter;
+      tempCtx.drawImage(sourceImage, 0, 0, tempCanvas.width, tempCanvas.height);
+      tempCtx.filter = 'none';
+
+      if (state.filter === 'negative') {
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 255 - data[i];
+          data[i + 1] = 255 - data[i + 1];
+          data[i + 2] = 255 - data[i + 2];
+        }
+
+        tempCtx.putImageData(imageData, 0, 0);
+      }
+
+      return tempCanvas;
+    }
+
+    function renderImage() {
+      if (!sourceImage) {
+        drawPlaceholder();
+        return;
+      }
+
+      const processedCanvas = createProcessedCanvas();
+      const sourceWidth = processedCanvas.width;
+      const sourceHeight = processedCanvas.height;
+
+      const angle = ((state.rotation % 360) + 360) % 360;
+      const rotated = angle === 90 || angle === 270;
+
+      canvas.width = rotated ? sourceHeight : sourceWidth;
+      canvas.height = rotated ? sourceWidth : sourceHeight;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.scale(state.flipX, 1);
+      ctx.rotate((state.rotation * Math.PI) / 180);
+      ctx.drawImage(processedCanvas, -sourceWidth / 2, -sourceHeight / 2);
+      ctx.restore();
+    }
+
+    function loadImageFromUrl(imageUrl) {
+      const img = new Image();
+      img.onload = function () {
+        sourceImage = img;
+        resetState();
+        renderImage();
+      };
+      img.src = imageUrl;
+    }
+
+    function stopCamera() {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+      video.srcObject = null;
+      video.classList.add('hidden');
+      setStatus('Camera nu este pornita.', 'info');
+      captureBtn.disabled = true;
+      stopCameraBtn.disabled = true;
+    }
+
+    function environmentAllowsCamera() {
+      return window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    }
+
+    function updateInitialCameraAvailability() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        startCameraBtn.disabled = true;
+        captureBtn.disabled = true;
+        stopCameraBtn.disabled = true;
+        setStatus('Acest browser nu suporta accesul la camera.', 'error');
+        return;
+      }
+
+      captureBtn.disabled = true;
+      stopCameraBtn.disabled = true;
+
+      if (!environmentAllowsCamera()) {
+        setStatus('Camera este blocata in acest context. Ruleaza proiectul pe localhost pentru a folosi webcam-ul.', 'error');
+      } else {
+        setStatus('Camera poate fi pornita. Browserul va cere permisiune la apasarea butonului.', 'info');
+      }
+    }
+
+    imageInput.addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        loadImageFromUrl(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    startCameraBtn.addEventListener('click', async function () {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setStatus('Browserul nu suporta functia de camera.', 'error');
+        return;
+      }
+
+      if (!environmentAllowsCamera()) {
+        setStatus('Camera nu poate fi pornita aici. Deschide aplicatia prin localhost, nu direct din fisier.', 'error');
+        return;
+      }
+
+      try {
+        if (currentStream) {
+          stopCamera();
+        }
+
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = currentStream;
+        video.classList.remove('hidden');
+        captureBtn.disabled = false;
+        stopCameraBtn.disabled = false;
+        setStatus('Camera a fost pornita cu succes.', 'success');
+      } catch (error) {
+        if (error.name === 'NotAllowedError') {
+          setStatus('Accesul la camera a fost refuzat sau blocat de browser. Permite accesul si ruleaza aplicatia pe localhost.', 'error');
+        } else if (error.name === 'NotFoundError') {
+          setStatus('Nu a fost gasita nicio camera pe dispozitiv.', 'error');
+        } else {
+          setStatus('Camera nu a putut fi pornita: ' + error.message, 'error');
+        }
+        console.error(error);
+      }
+    });
+
+    captureBtn.addEventListener('click', function () {
+      if (!video.srcObject || !currentStream) {
+        setStatus('Porneste mai intai camera.', 'error');
+        return;
+      }
+
+      if (!video.videoWidth || !video.videoHeight) {
+        setStatus('Fluxul video nu este inca pregatit. Incearca din nou in cateva momente.', 'error');
+        return;
+      }
+
+      const captureCanvas = document.createElement('canvas');
+      const captureCtx = captureCanvas.getContext('2d');
+      captureCanvas.width = video.videoWidth;
+      captureCanvas.height = video.videoHeight;
+      captureCtx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+      loadImageFromUrl(captureCanvas.toDataURL('image/png'));
+      setStatus('Poza a fost capturata cu succes.', 'success');
+    });
+
+    stopCameraBtn.addEventListener('click', function () {
+      stopCamera();
+    });
+
+    filterSelect.addEventListener('change', function () {
+      state.filter = this.value;
+      renderImage();
+    });
+
+    brightnessRange.addEventListener('input', function () {
+      state.brightness = Number(this.value);
+      renderImage();
+    });
+
+    contrastRange.addEventListener('input', function () {
+      state.contrast = Number(this.value);
+      renderImage();
+    });
+
+    rotateLeftBtn.addEventListener('click', function () {
+      state.rotation -= 90;
+      renderImage();
+    });
+
+    rotateRightBtn.addEventListener('click', function () {
+      state.rotation += 90;
+      renderImage();
+    });
+
+    flipBtn.addEventListener('click', function () {
+      state.flipX *= -1;
+      renderImage();
+    });
+
+    resetBtn.addEventListener('click', function () {
+      if (!sourceImage) return;
+      resetState();
+      renderImage();
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      if (!sourceImage) {
+        alert('Nu exista nicio imagine de descarcat.');
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.download = 'imagine_editata.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    window.addEventListener('beforeunload', stopCamera);
+
+    drawPlaceholder();
+    updateInitialCameraAvailability();
+  </script>
+</body>
+</html>

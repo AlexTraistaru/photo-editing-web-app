@@ -106,11 +106,17 @@
 
     .preview-box{
       min-height:0;display:flex;justify-content:center;align-items:center;overflow:hidden;
+      position:relative;padding:16px;
       border:1px dashed #4b5563;border-radius:var(--radius);
       background:repeating-linear-gradient(45deg,#111827,#111827 10px,#151c2b 10px,#151c2b 20px)
     }
-    .preview-box canvas,.preview-box video{max-width:100%;max-height:100%;display:block;object-fit:contain;box-shadow:0 10px 40px rgba(0,0,0,.45)}
-    .hidden{display:none}
+    .preview-box canvas,.preview-box video{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      max-width:calc(100% - 32px);max-height:calc(100% - 32px);
+      width:auto;height:auto;display:block;object-fit:contain;
+      box-shadow:0 10px 40px rgba(0,0,0,.45)
+    }
+    .hidden{display:none !important}
 
     @media (max-width:1024px){
       html,body{overflow:auto}

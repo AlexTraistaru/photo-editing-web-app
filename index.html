@@ -4,217 +4,538 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aplicatie web de editare foto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
     * {
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: 'Inter', sans-serif;
+    }
+
+    :root {
+      /* Paleta culori moderne - Dark Mode */
+      --bg-app: #0b0f19;
+      --bg-panel: #111827;
+      --bg-section: #1f2937;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.2);
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      
+      --input-bg: #111827;
+      
+      /* Accente de culoare (Gradient fresh) */
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --accent-soft: rgba(99, 102, 241, 0.15);
+      
+      /* Stari */
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --success-text: #34d399;
+      --success-border: rgba(16, 185, 129, 0.2);
+      
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-text: #f87171;
+      --error-border: rgba(239, 68, 68, 0.2);
+      
+      --info-bg: rgba(59, 130, 246, 0.1);
+      --info-text: #60a5fa;
+      --info-border: rgba(59, 130, 246, 0.2);
+    }
+
+    /* Scrollbar stilizat pentru meniul lateral */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-panel); }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      overflow: hidden;
     }
 
     body {
-      margin: 0;
-      background: #f4f6f8;
-      color: #222;
+      padding: 20px;
     }
 
-    .container {
-      max-width: 1100px;
+    .app {
+      height: calc(100vh - 40px);
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+      max-width: 1600px;
       margin: 0 auto;
-      padding: 24px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 24px;
     }
 
     .panel {
-      background: white;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .main {
+      padding: 24px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    /* Tipografie */
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    h2 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .subtext {
+      margin: 6px 0 0 0;
+      color: var(--text-muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 100px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .section {
+      border: 1px solid var(--border);
       border-radius: 16px;
       padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      background: var(--bg-section);
+      transition: border-color 0.3s ease;
+    }
+    
+    .section:hover {
+      border-color: var(--border-hover);
     }
 
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
+    /* Controale (Inputs, Selects, Buttons) */
     .control-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      min-width: 180px;
+      gap: 8px;
+      margin-bottom: 16px;
+      position: relative;
     }
 
-    button,
-    select,
-    input[type="range"],
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    button, select, input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
     input[type="file"] {
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      background: white;
+      display: none;
+    }
+
+    /* Buton personalizat pentru File Upload */
+    .file-upload-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px dashed #4b5563;
+      background: rgba(255,255,255,0.02);
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .file-upload-btn:hover {
+      border-color: var(--accent-color);
+      background: var(--accent-soft);
+      color: #818cf8;
     }
 
     button {
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     button:hover:not(:disabled) {
-      background: #f0f0f0;
+      background: #374151;
+      border-color: #6b7280;
+    }
+
+    /* Buton accentuat */
+    button.primary {
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    button.primary:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
     }
 
     button:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
+      opacity: 0.4;
     }
 
-    .preview-area {
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    /* Slidere moderne - Fix pentru Chrome & Firefox */
+    input[type="range"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: transparent;
+      padding: 8px 0;
+    }
+
+    input[type="range"]:focus {
+      outline: none;
+    }
+
+    /* Chrome/Edge Track */
+    input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #4b5563;
+      border-radius: 10px;
+    }
+
+    /* Firefox Track */
+    input[type="range"]::-moz-range-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #4b5563;
+      border-radius: 10px;
+    }
+
+    /* Chrome/Edge Thumb */
+    input[type="range"]::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      border: 2px solid var(--accent-color);
+      transition: transform 0.1s;
+    }
+
+    /* Firefox Thumb */
+    input[type="range"]::-moz-range-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      border: 2px solid var(--accent-color);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type="range"]::-moz-range-thumb:hover { transform: scale(1.2); }
+
+    .value-label {
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .button-stack {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
-      justify-items: center;
-    }
-
-    canvas,
-    video {
-      max-width: 100%;
-      border: 2px solid #d9d9d9;
-      border-radius: 12px;
-      background: #fafafa;
-    }
-
-    .hint {
-      font-size: 14px;
-      color: #555;
-      margin-top: 8px;
-      line-height: 1.5;
-    }
-
-    .status {
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.5;
-      margin-top: 12px;
-    }
-
-    .status.info {
-      background: #eef5ff;
-      color: #1f4d8f;
-      border: 1px solid #c9dcff;
-    }
-
-    .status.error {
-      background: #fff1f1;
-      color: #8a1f1f;
-      border: 1px solid #f2c2c2;
-    }
-
-    .status.success {
-      background: #eefbf1;
-      color: #1f6b34;
-      border: 1px solid #bfe6c8;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .buttons-wrap {
-      display: flex;
-      flex-wrap: wrap;
       gap: 10px;
     }
 
-    .test-list {
-      margin: 0;
-      padding-left: 18px;
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Mesaje status */
+    .status {
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.5;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .status.info { background: var(--info-bg); color: var(--info-text); border: 1px solid var(--info-border); }
+    .status.error { background: var(--error-bg); color: var(--error-text); border: 1px solid var(--error-border); }
+    .status.success { background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+
+    /* Zona Previzualizare */
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .preview-box {
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #4b5563;
+      border-radius: 16px;
+      background: repeating-linear-gradient(45deg, #111827, #111827 10px, #151c2b 10px, #151c2b 20px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-box canvas, .preview-box video {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      object-fit: contain;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    video.hidden { display: none; }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .top-actions button {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--text-muted);
       line-height: 1.6;
+      background: rgba(255,255,255,0.03);
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 1024px) {
+      html, body { overflow: auto; }
+      .app { height: auto; grid-template-columns: 1fr; }
+      .main { min-height: 600px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Aplicatie web de editare foto</h1>
+  <div class="app">
+    <aside class="panel sidebar">
+      <div>
+        <div class="brand-badge">Proiect Multimedia</div>
+        <h1>Editor Foto Web</h1>
+        <p class="subtext">
+          Aplicatie web interactiva pentru incarcare, captura live si procesare matematica a imaginilor.
+        </p>
+      </div>
 
-    <div class="panel">
-      <div class="row">
+      <div class="section">
+        <h2>1. Sursa imaginii</h2>
         <div class="control-group">
-          <label for="imageInput">Incarca o imagine</label>
+          <label for="imageInput" class="file-upload-btn">
+            Alege o imagine din calculator...
+          </label>
           <input type="file" id="imageInput" accept="image/*" />
         </div>
 
-        <div class="buttons-wrap">
-          <button id="startCameraBtn">Porneste camera</button>
-          <button id="captureBtn">Captureaza poza</button>
+        <div class="button-row" style="margin-top: 12px;">
+          <button id="startCameraBtn" class="primary">Porneste camera</button>
           <button id="stopCameraBtn">Opreste camera</button>
+        </div>
+        <div class="button-stack" style="margin-top: 10px;">
+          <button id="captureBtn" class="primary" style="background: #10b981;">Captureaza poza pe loc</button>
         </div>
       </div>
 
-      <div class="hint">
-        Aplicatia merge direct in browser pentru editare si upload. Pentru acces la webcam, este recomandat sa rulezi proiectul pe <b>localhost</b>.
-      </div>
+      <div class="section">
+        <h2>2. Filtre si ajustari</h2>
 
-      <div id="cameraStatus" class="status info">
-        Camera nu este pornita.
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="row">
         <div class="control-group">
-          <label for="filterSelect">Filtru</label>
+          <label for="filterSelect">Efecte de culoare (Filtre)</label>
           <select id="filterSelect">
             <option value="none">Fara filtru</option>
-            <option value="grayscale">Grayscale</option>
-            <option value="sepia">Sepia</option>
-            <option value="negative">Negative</option>
+            <option value="grayscale">Grayscale (Alb-negru)</option>
+            <option value="sepia">Sepia (Retro)</option>
+            <option value="negative">Negative (Inversare culori)</option>
+            <option value="threshold">Binarizare (Threshold)</option>
           </select>
         </div>
 
         <div class="control-group">
           <label for="brightnessRange">Luminozitate</label>
           <input type="range" id="brightnessRange" min="0" max="200" value="100" />
+          <span class="value-label" id="brightnessValue">100%</span>
         </div>
 
         <div class="control-group">
           <label for="contrastRange">Contrast</label>
           <input type="range" id="contrastRange" min="0" max="200" value="100" />
+          <span class="value-label" id="contrastValue">100%</span>
+        </div>
+
+        <div class="control-group">
+          <label for="saturationRange">Saturatie</label>
+          <input type="range" id="saturationRange" min="0" max="200" value="100" />
+          <span class="value-label" id="saturationValue">100%</span>
         </div>
       </div>
 
-      <div class="row buttons-wrap">
-        <button id="rotateLeftBtn">Rotire stanga</button>
-        <button id="rotateRightBtn">Rotire dreapta</button>
-        <button id="flipBtn">Flip orizontal</button>
-        <button id="resetBtn">Reset</button>
-        <button id="downloadBtn">Descarca imaginea</button>
+      <div class="section">
+        <h2>3. Transformari geometrice</h2>
+        <div class="button-row">
+          <button id="rotateLeftBtn">Rotire stanga</button>
+          <button id="rotateRightBtn">Rotire dreapta</button>
+        </div>
+        <div class="button-row" style="margin-top: 10px;">
+          <button id="flipBtn">Flip orizontal</button>
+          <button id="flipVerticalBtn">Flip vertical</button>
+        </div>
       </div>
-    </div>
 
-    <div class="panel preview-area">
-      <video id="video" width="480" height="360" autoplay playsinline muted class="hidden"></video>
-      <canvas id="canvas" width="800" height="500"></canvas>
-      <div class="hint">Imaginea editata va fi afisata pe canvas.</div>
-    </div>
+      <div class="section">
+        <h2>4. Watermarking</h2>
+        <div class="control-group">
+          <label for="watermarkText">Text (Protejare drepturi)</label>
+          <input type="text" id="watermarkText" placeholder="Ex: Autorul" />
+        </div>
 
-    <div class="panel">
-      <h2>Verificari rapide</h2>
-      <ul class="test-list">
-        <li>Upload imagine din calculator</li>
-        <li>Aplicare filtru Negative, unde fiecare canal devine 255 minus valoarea curenta</li>
-        <li>Modificare luminozitate si contrast</li>
-        <li>Rotire si flip orizontal</li>
-        <li>Descarcare imagine editata</li>
-        <li>Captura din camera, doar daca browserul permite accesul</li>
-      </ul>
-    </div>
+        <div class="button-row" style="margin-top: 12px;">
+          <div class="control-group" style="margin-bottom: 0;">
+            <label for="watermarkPosition">Pozitie</label>
+            <select id="watermarkPosition">
+              <option value="bottom-right">Dreapta jos</option>
+              <option value="bottom-left">Stanga jos</option>
+              <option value="top-right">Dreapta sus</option>
+              <option value="top-left">Stanga sus</option>
+              <option value="center">Centru</option>
+            </select>
+          </div>
+          <div class="control-group" style="margin-bottom: 0;">
+            <label for="watermarkAlpha">Opacitate</label>
+            <input type="range" id="watermarkAlpha" min="10" max="100" value="40" style="margin-top: 10px;" />
+            <span class="value-label" id="watermarkAlphaValue" style="top: 2px;">40%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="button-row">
+        <button id="resetBtn">Reseteaza</button>
+        <button id="downloadBtn" class="primary">Descarca Fisier</button>
+      </div>
+
+      <div id="cameraStatus" class="status info">
+        Camera nu este pornita.
+      </div>
+    </aside>
+
+    <main class="panel main">
+      <div class="preview-header">
+        <div>
+          <h2 style="margin-bottom: 4px; font-size: 20px;">Zona de lucru (Canvas)</h2>
+          <p class="subtext">Aici poti observa rezultatul aplicarii editarilor asupra imaginii.</p>
+        </div>
+        <div class="top-actions">
+          <button id="showVideoBtn">Afiseaza camera</button>
+          <button id="showCanvasBtn" class="primary">Afiseaza rezultat</button>
+        </div>
+      </div>
+
+      <div class="hint">
+        <strong>Informatie tehnica:</strong> Toate transformarile si aplicarea watermark-ului au loc in timp real (real-time processing) folosind API-ul Canvas. Operatiile pe pixeli se actualizeaza la fiecare interactiune cu sliderele de control.
+      </div>
+
+      <div class="preview-box">
+        <video id="video" autoplay playsinline muted class="hidden"></video>
+        <canvas id="canvas" width="800" height="500"></canvas>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -225,11 +546,22 @@
     const filterSelect = document.getElementById('filterSelect');
     const brightnessRange = document.getElementById('brightnessRange');
     const contrastRange = document.getElementById('contrastRange');
+    const saturationRange = document.getElementById('saturationRange');
+    const brightnessValue = document.getElementById('brightnessValue');
+    const contrastValue = document.getElementById('contrastValue');
+    const saturationValue = document.getElementById('saturationValue');
     const rotateLeftBtn = document.getElementById('rotateLeftBtn');
     const rotateRightBtn = document.getElementById('rotateRightBtn');
     const flipBtn = document.getElementById('flipBtn');
+    const flipVerticalBtn = document.getElementById('flipVerticalBtn');
     const resetBtn = document.getElementById('resetBtn');
     const downloadBtn = document.getElementById('downloadBtn');
+    const watermarkText = document.getElementById('watermarkText');
+    const watermarkPosition = document.getElementById('watermarkPosition');
+    const watermarkAlpha = document.getElementById('watermarkAlpha');
+    const watermarkAlphaValue = document.getElementById('watermarkAlphaValue');
+    const showCanvasBtn = document.getElementById('showCanvasBtn');
+    const showVideoBtn = document.getElementById('showVideoBtn');
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const cameraStatus = document.getElementById('cameraStatus');
@@ -242,8 +574,13 @@
       filter: 'none',
       brightness: 100,
       contrast: 100,
+      saturation: 100,
       rotation: 0,
-      flipX: 1
+      flipX: 1,
+      flipY: 1,
+      watermarkText: '',
+      watermarkPosition: 'bottom-right',
+      watermarkAlpha: 40
     };
 
     function setStatus(message, type = 'info') {
@@ -251,28 +588,62 @@
       cameraStatus.textContent = message;
     }
 
+    function showCanvas() {
+      canvas.style.display = 'block';
+      video.classList.add('hidden');
+    }
+
+    function showVideo() {
+      if (!currentStream) {
+        setStatus('Camera nu este pornita.', 'error');
+        return;
+      }
+      canvas.style.display = 'none';
+      video.classList.remove('hidden');
+    }
+
     function drawPlaceholder() {
       canvas.width = 800;
       canvas.height = 500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#f0f0f0';
+      ctx.fillStyle = '#111827';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#666';
-      ctx.font = '24px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '500 20px Inter';
       ctx.textAlign = 'center';
-      ctx.fillText('Nu exista inca o imagine incarcata.', canvas.width / 2, canvas.height / 2);
+      ctx.fillText('Nicio imagine incarcata', canvas.width / 2, canvas.height / 2 - 10);
+      ctx.font = '400 14px Inter';
+      ctx.fillText('Alege un fisier sau foloseste camera web', canvas.width / 2, canvas.height / 2 + 20);
+      showCanvas();
     }
 
     function resetState() {
       state.filter = 'none';
       state.brightness = 100;
       state.contrast = 100;
+      state.saturation = 100;
       state.rotation = 0;
       state.flipX = 1;
+      state.flipY = 1;
+      state.watermarkText = '';
+      state.watermarkPosition = 'bottom-right';
+      state.watermarkAlpha = 40;
 
       filterSelect.value = 'none';
       brightnessRange.value = 100;
       contrastRange.value = 100;
+      saturationRange.value = 100;
+      brightnessValue.textContent = '100%';
+      contrastValue.textContent = '100%';
+      saturationValue.textContent = '100%';
+      watermarkText.value = '';
+      watermarkPosition.value = 'bottom-right';
+      watermarkAlpha.value = 40;
+      watermarkAlphaValue.textContent = '40%';
+    }
+
+    function clamp(value) {
+      return Math.max(0, Math.min(255, value));
     }
 
     function createProcessedCanvas() {
@@ -282,7 +653,7 @@
       tempCanvas.width = sourceImage.naturalWidth || sourceImage.width;
       tempCanvas.height = sourceImage.naturalHeight || sourceImage.height;
 
-      let cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%)`;
+      let cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%)`;
 
       if (state.filter === 'grayscale') {
         cssFilter += ' grayscale(100%)';
@@ -294,20 +665,75 @@
       tempCtx.drawImage(sourceImage, 0, 0, tempCanvas.width, tempCanvas.height);
       tempCtx.filter = 'none';
 
-      if (state.filter === 'negative') {
+      if (state.filter === 'negative' || state.filter === 'threshold') {
         const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
         const data = imageData.data;
 
         for (let i = 0; i < data.length; i += 4) {
-          data[i] = 255 - data[i];
-          data[i + 1] = 255 - data[i + 1];
-          data[i + 2] = 255 - data[i + 2];
+          if (state.filter === 'negative') {
+            data[i] = 255 - data[i];
+            data[i + 1] = 255 - data[i + 1];
+            data[i + 2] = 255 - data[i + 2];
+          }
+
+          if (state.filter === 'threshold') {
+            const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            const value = gray >= 128 ? 255 : 0;
+            data[i] = value;
+            data[i + 1] = value;
+            data[i + 2] = value;
+          }
+
+          data[i] = clamp(data[i]);
+          data[i + 1] = clamp(data[i + 1]);
+          data[i + 2] = clamp(data[i + 2]);
         }
 
         tempCtx.putImageData(imageData, 0, 0);
       }
 
       return tempCanvas;
+    }
+
+    function drawWatermark() {
+      if (!state.watermarkText.trim()) {
+        return;
+      }
+
+      const margin = 20;
+      const fontSize = Math.max(18, Math.round(canvas.width * 0.035));
+      ctx.save();
+      ctx.globalAlpha = state.watermarkAlpha / 100;
+      ctx.fillStyle = 'white';
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.font = `bold ${fontSize}px Inter, Arial`;
+
+      let x = margin;
+      let y = margin + fontSize;
+      ctx.textAlign = 'left';
+
+      if (state.watermarkPosition === 'top-right') {
+        x = canvas.width - margin;
+        y = margin + fontSize;
+        ctx.textAlign = 'right';
+      } else if (state.watermarkPosition === 'bottom-left') {
+        x = margin;
+        y = canvas.height - margin;
+        ctx.textAlign = 'left';
+      } else if (state.watermarkPosition === 'bottom-right') {
+        x = canvas.width - margin;
+        y = canvas.height - margin;
+        ctx.textAlign = 'right';
+      } else if (state.watermarkPosition === 'center') {
+        x = canvas.width / 2;
+        y = canvas.height / 2;
+        ctx.textAlign = 'center';
+      }
+
+      ctx.strokeText(state.watermarkText, x, y);
+      ctx.fillText(state.watermarkText, x, y);
+      ctx.restore();
     }
 
     function renderImage() {
@@ -329,10 +755,13 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.scale(state.flipX, 1);
+      ctx.scale(state.flipX, state.flipY);
       ctx.rotate((state.rotation * Math.PI) / 180);
       ctx.drawImage(processedCanvas, -sourceWidth / 2, -sourceHeight / 2);
       ctx.restore();
+
+      drawWatermark();
+      showCanvas();
     }
 
     function loadImageFromUrl(imageUrl) {
@@ -355,6 +784,7 @@
       setStatus('Camera nu este pornita.', 'info');
       captureBtn.disabled = true;
       stopCameraBtn.disabled = true;
+      showCanvas();
     }
 
     function environmentAllowsCamera() {
@@ -374,9 +804,9 @@
       stopCameraBtn.disabled = true;
 
       if (!environmentAllowsCamera()) {
-        setStatus('Camera este blocata in acest context. Ruleaza proiectul pe localhost pentru a folosi webcam-ul.', 'error');
+        setStatus('Camera poate fi blocata daca fisierul nu ruleaza pe localhost sau HTTPS.', 'error');
       } else {
-        setStatus('Camera poate fi pornita. Browserul va cere permisiune la apasarea butonului.', 'info');
+        setStatus('Gata pentru captura. Browserul va cere permisiune.', 'info');
       }
     }
 
@@ -398,7 +828,7 @@
       }
 
       if (!environmentAllowsCamera()) {
-        setStatus('Camera nu poate fi pornita aici. Deschide aplicatia prin localhost, nu direct din fisier.', 'error');
+        setStatus('Camera nu poate fi pornita aici. Ruleaza aplicatia pe localhost.', 'error');
         return;
       }
 
@@ -409,13 +839,13 @@
 
         currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = currentStream;
-        video.classList.remove('hidden');
         captureBtn.disabled = false;
         stopCameraBtn.disabled = false;
         setStatus('Camera a fost pornita cu succes.', 'success');
+        showVideo();
       } catch (error) {
         if (error.name === 'NotAllowedError') {
-          setStatus('Accesul la camera a fost refuzat sau blocat de browser. Permite accesul si ruleaza aplicatia pe localhost.', 'error');
+          setStatus('Accesul la camera a fost refuzat sau blocat de browser.', 'error');
         } else if (error.name === 'NotFoundError') {
           setStatus('Nu a fost gasita nicio camera pe dispozitiv.', 'error');
         } else {
@@ -457,11 +887,19 @@
 
     brightnessRange.addEventListener('input', function () {
       state.brightness = Number(this.value);
+      brightnessValue.textContent = this.value + '%';
       renderImage();
     });
 
     contrastRange.addEventListener('input', function () {
       state.contrast = Number(this.value);
+      contrastValue.textContent = this.value + '%';
+      renderImage();
+    });
+
+    saturationRange.addEventListener('input', function () {
+      state.saturation = Number(this.value);
+      saturationValue.textContent = this.value + '%';
       renderImage();
     });
 
@@ -477,6 +915,11 @@
 
     flipBtn.addEventListener('click', function () {
       state.flipX *= -1;
+      renderImage();
+    });
+
+    flipVerticalBtn.addEventListener('click', function () {
+      state.flipY *= -1;
       renderImage();
     });
 
@@ -497,6 +940,25 @@
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
+
+    watermarkText.addEventListener('input', function () {
+      state.watermarkText = this.value;
+      renderImage();
+    });
+
+    watermarkPosition.addEventListener('change', function () {
+      state.watermarkPosition = this.value;
+      renderImage();
+    });
+
+    watermarkAlpha.addEventListener('input', function () {
+      state.watermarkAlpha = Number(this.value);
+      watermarkAlphaValue.textContent = this.value + '%';
+      renderImage();
+    });
+
+    showCanvasBtn.addEventListener('click', showCanvas);
+    showVideoBtn.addEventListener('click', showVideo);
 
     window.addEventListener('beforeunload', stopCamera);
 
